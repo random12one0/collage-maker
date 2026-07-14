@@ -268,6 +268,7 @@ function setSlotImage(slot, imgEl, dataUrl) {
     dom.slot2.classList.add('has-image');
   }
   renderer.setImages(state.image1, state.image2);
+  if (state.image1 && state.image2) setTimeout(scrollToCanvas, 200);
   scheduleRender();
 }
 
@@ -780,15 +781,7 @@ init();
 
 function scrollToCanvas() {
   if (window.innerWidth < 800) {
-    dom.canvas.closest('.canvas-wrap')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-}
-
-const _origSetSlot = setSlotImage;
-// Patch setSlotImage to scroll once both images are present
-function setSlotImage(slot, imgEl, dataUrl) {
-  _origSetSlot(slot, imgEl, dataUrl);
-  if (state.image1 && state.image2) {
-    setTimeout(scrollToCanvas, 200);
+    document.getElementById('previewWrap')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 }
