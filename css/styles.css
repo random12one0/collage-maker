@@ -76,6 +76,11 @@ body {
 .brand { display: flex; align-items: center; gap: var(--sp-sm); }
 .brand-icon { font-size: 1.2rem; line-height: 1; }
 .brand-name { font-size: 1rem; font-weight: 700; letter-spacing: -0.02em; }
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+}
 .header-link {
   font-size: 0.72rem;
   color: var(--c-accent);
@@ -86,6 +91,17 @@ body {
   border-radius: var(--r-sm);
 }
 .header-link:hover { border-color: var(--c-accent); color: var(--c-accent-h); }
+.header-help-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface-2);
+  color: var(--c-muted);
+  font-weight: 700;
+  cursor: pointer;
+}
+.header-help-btn:hover { border-color: var(--c-accent); color: var(--c-accent); }
 .render-badge { font-size: 0.72rem; font-weight: 600; color: var(--c-muted); }
 
 /* -- App Shell -------------------------------------------------- */
@@ -745,6 +761,54 @@ body {
 @keyframes toast-in  { from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none} }
 @keyframes toast-out { to{opacity:0;transform:translateY(8px)} }
 
+/* -- Help dialog ------------------------------------------------ */
+.help-dialog {
+  border: none;
+  padding: 0;
+  background: transparent;
+}
+.help-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.55);
+}
+.help-dialog__card {
+  min-width: min(92vw, 380px);
+  background: var(--c-surface);
+  color: var(--c-text);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-md);
+}
+.help-dialog__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-sm);
+}
+.help-dialog__head h2 {
+  font-size: 0.92rem;
+  letter-spacing: 0.02em;
+}
+.help-dialog__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.82rem;
+}
+.help-dialog__body p {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+kbd {
+  font-family: inherit;
+  font-size: 0.75rem;
+  line-height: 1;
+  background: var(--c-surface-3);
+  border: 1px solid var(--c-border);
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+
 /* -- Spinner --------------------------------------------------- */
 .spinner {
   display: inline-block;
@@ -799,4 +863,14 @@ body {
   :root { --sidebar-w: 360px; }
   .app-main { padding: var(--sp-xl); }
   .upload-strip { min-height: 170px; }
+}
+
+@media (max-width: 560px) {
+  .header-link {
+    font-size: 0.66rem;
+    padding: 3px 6px;
+  }
+  .render-badge {
+    display: none;
+  }
 }

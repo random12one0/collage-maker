@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Fast, client-side collage maker with batch mode and custom studio." />
+  <meta name="theme-color" content="#141620" />
   <title>Collage Maker</title>
-  <link rel="stylesheet" href="css/styles.css?v=20260714-2" />
+  <link rel="manifest" href="manifest.webmanifest?v=20260714-1" />
+  <link rel="stylesheet" href="css/styles.css?v=20260714-3" />
 </head>
 <body>
 
@@ -16,7 +19,10 @@
       <span class="brand-icon" aria-hidden="true">🖼</span>
       <span class="brand-name">Collage Maker</span>
     </div>
-    <a class="header-link" href="custom.html">Custom collage studio</a>
+    <div class="header-actions">
+      <a class="header-link" href="custom.html">Custom collage studio</a>
+      <button class="header-help-btn" id="openHelpBtn" type="button" aria-haspopup="dialog" aria-controls="helpDialog">?</button>
+    </div>
     <span id="previewStatus" class="render-badge" aria-live="polite"></span>
   </header>
 
@@ -318,8 +324,24 @@
 
   </div><!-- /app-shell -->
 
-  <script src="js/collageRenderer.js?v=20260714-2"></script>
-  <script src="js/templateManager.js?v=20260714-2"></script>
-  <script src="js/app.js?v=20260714-2"></script>
+  <dialog id="helpDialog" class="help-dialog" aria-labelledby="helpTitle">
+    <form method="dialog" class="help-dialog__card">
+      <div class="help-dialog__head">
+        <h2 id="helpTitle">Shortcuts</h2>
+        <button type="submit" class="slot-clear" aria-label="Close help">✕</button>
+      </div>
+      <div class="help-dialog__body">
+        <p><kbd>1</kbd>-<kbd>5</kbd> Switch tabs</p>
+        <p><kbd>X</kbd> Swap images</p>
+        <p><kbd>U</kbd> Open uploader</p>
+        <p><kbd>Ctrl/Cmd</kbd> + <kbd>S</kbd> Download collage</p>
+        <p><kbd>?</kbd> Toggle this help</p>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="js/collageRenderer.js?v=20260714-3"></script>
+  <script src="js/templateManager.js?v=20260714-3"></script>
+  <script src="js/app.js?v=20260714-3"></script>
 </body>
 </html>

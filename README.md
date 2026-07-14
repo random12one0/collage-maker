@@ -14,6 +14,8 @@ Open `index.html` in any modern browser — no build step required.
 - Template system with localStorage persistence
 - Batch pair processing tab (process many 2-image collages in one run)
 - Custom Collage Studio page for flexible multi-image layouts (2-9 images)
+- Keyboard shortcuts + in-app shortcut help
+- Installable/offline-ready web app (manifest + service worker)
 - PNG / JPEG export
 
 ## Documentation
@@ -38,6 +40,8 @@ collage-maker/
 │   ├── templateManager.js
 │   ├── app.js
 │   └── custom.js
+├── manifest.webmanifest
+├── sw.js
 └── docs/
     ├── README.md
     ├── architecture.md

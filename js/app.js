@@ -137,12 +137,21 @@ const dom = {
   downloadAllBatchBtn: $('downloadAllBatchBtn'),
   batchStatus:      $('batchStatus'),
   batchList:        $('batchList'),
+
+  // Help
+  openHelpBtn:      $('openHelpBtn'),
+  helpDialog:       $('helpDialog'),
 };
 
 /* ── Renderer & Template manager ──────────────────────────── */
 
 const renderer = new CollagRenderer(dom.canvas);
 const templateManager = new TemplateManager();
+const STORAGE_KEYS = {
+  activeTab: 'collageMaker_activeTab',
+  exportFormat: 'collageMaker_exportFormat',
+  exportQuality: 'collageMaker_exportQuality',
+};
 
 /* ── Settings helpers ───────────────────────────────────────── */
 
@@ -582,6 +591,26 @@ dom.bgSource.addEventListener('change', () => {
   scheduleRender();
 });
 
+function switchToTab(target) {
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabPanels = document.querySelectorAll('.tab-panel');
+  let found = false;
+
+  tabBtns.forEach(b => {
+    const isActive = b.dataset.tab === target;
+    b.classList.toggle('is-active', isActive);
+    b.setAttribute('aria-selected', String(isActive));
+    if (isActive) found = true;
+  });
+  tabPanels.forEach(p => { p.hidden = true; });
+
+  const panel = document.getElementById(`panel-${target}`);
+  if (panel) panel.hidden = false;
+  if (found) {
+    try { localStorage.setItem(STORAGE_KEYS.activeTab, target); } catch (_) {}
+  }
+}
+
 // ── Alignment buttons ─────────────────────────────────────────
 
 [dom.alignLeft, dom.alignCenter, dom.alignRight].forEach(btn => {
@@ -629,6 +658,13 @@ dom.downloadBtn.addEventListener('click', async () => {
     dom.downloadBtn.disabled = false;
     dom.downloadBtn.innerHTML = '<span aria-hidden="true">⬇</span> Download Collage';
   }
+});
+
+dom.exportFormat.addEventListener('change', () => {
+  try { localStorage.setItem(STORAGE_KEYS.exportFormat, dom.exportFormat.value); } catch (_) {}
+});
+dom.exportQuality.addEventListener('change', () => {
+  try { localStorage.setItem(STORAGE_KEYS.exportQuality, dom.exportQuality.value); } catch (_) {}
 });
 
 /* ── Templates ──────────────────────────────────────────────── */
@@ -869,6 +905,8 @@ if (dom.downloadAllBatchBtn) {
   });
 }
 
+window.addEventListener('beforeunload', releaseBatchUrls);
+
 /* ── Helpers ─────────────────────────────────────────────────── */
 
 function escHtml(str) {
@@ -888,6 +926,18 @@ function formatBytes(bytes) {
 /* ── Init ─────────────────────────────────────────────────────── */
 
 function init() {
+  // Restore lightweight user preferences
+  try {
+    const savedFormat = localStorage.getItem(STORAGE_KEYS.exportFormat);
+    const savedQuality = localStorage.getItem(STORAGE_KEYS.exportQuality);
+    if (savedFormat && [...dom.exportFormat.options].some(o => o.value === savedFormat)) {
+      dom.exportFormat.value = savedFormat;
+    }
+    if (savedQuality && [...dom.exportQuality.options].some(o => o.value === savedQuality)) {
+      dom.exportQuality.value = savedQuality;
+    }
+  } catch (_) {}
+
   // Apply default settings on load
   const defaultTpl = templateManager.getById('__default__');
   if (defaultTpl) {
@@ -903,6 +953,21 @@ function init() {
   updateBgSourceVisibility();
   dom.shadowControls.style.display = dom.shadowEnabled.checked ? '' : 'none';
   renderBatchList();
+
+  // Restore last active tab
+  let preferredTab = 'layout';
+  try {
+    preferredTab = localStorage.getItem(STORAGE_KEYS.activeTab) || 'layout';
+  } catch (_) {}
+  switchToTab(preferredTab);
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js?v=20260714-1').catch(err => {
+        console.error('[CollageMaker] SW registration failed:', err);
+      });
+    });
+  }
 }
 
 init();
@@ -911,25 +976,59 @@ init();
 
 (function initTabs() {
   const tabBtns   = document.querySelectorAll('.tab-btn');
-  const tabPanels = document.querySelectorAll('.tab-panel');
 
   tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      const target = btn.dataset.tab;
-
-      tabBtns.forEach(b => {
-        b.classList.remove('is-active');
-        b.setAttribute('aria-selected', 'false');
-      });
-      tabPanels.forEach(p => { p.hidden = true; });
-
-      btn.classList.add('is-active');
-      btn.setAttribute('aria-selected', 'true');
-      const panel = document.getElementById(`panel-${target}`);
-      if (panel) panel.hidden = false;
+      switchToTab(btn.dataset.tab);
     });
   });
 })();
+
+if (dom.openHelpBtn && dom.helpDialog) {
+  dom.openHelpBtn.addEventListener('click', () => {
+    if (dom.helpDialog.open) dom.helpDialog.close();
+    else dom.helpDialog.showModal();
+  });
+}
+
+window.addEventListener('keydown', e => {
+  // Ignore if typing in form controls
+  const tag = (document.activeElement?.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+  if (e.key === '?') {
+    e.preventDefault();
+    if (dom.helpDialog) {
+      if (dom.helpDialog.open) dom.helpDialog.close();
+      else dom.helpDialog.showModal();
+    }
+    return;
+  }
+
+  const tabMap = { '1': 'layout', '2': 'style', '3': 'bg', '4': 'tpl', '5': 'batch' };
+  if (tabMap[e.key]) {
+    e.preventDefault();
+    switchToTab(tabMap[e.key]);
+    return;
+  }
+
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+    e.preventDefault();
+    if (!dom.downloadBtn.disabled) dom.downloadBtn.click();
+    return;
+  }
+
+  if (e.key.toLowerCase() === 'x') {
+    e.preventDefault();
+    dom.swapBtn.click();
+    return;
+  }
+
+  if (e.key.toLowerCase() === 'u') {
+    e.preventDefault();
+    dom.fileInput.click();
+  }
+});
 
 /* ── Mobile: auto-scroll canvas into view when both images loaded ── */
 

@@ -178,5 +178,13 @@
     }, mimeType, quality);
   });
 
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js?v=20260714-1').catch(err => {
+        console.error('[CustomStudio] SW registration failed:', err);
+      });
+    });
+  }
+
   updatePresetUi();
 })();

@@ -1,0 +1,9 @@
+{
+  "name": "Collage Maker",
+  "short_name": "Collage",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0c0d12",
+  "theme_color": "#141620",
+  "description": "Create polished collages in your browser with batch mode and custom layouts."
+}
