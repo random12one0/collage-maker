@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Collage Maker — Two-Image Collage Creator</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- ===== HEADER ===== -->
+  <header class="app-header" role="banner">
+    <div class="header-inner">
+      <h1 class="app-title">
+        <span class="app-title__icon" aria-hidden="true">🖼</span>
+        Collage Maker
+      </h1>
+      <p class="app-subtitle">Create beautiful two-image collages in seconds</p>
+    </div>
+  </header>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="app-main" role="main">
+
+    <!-- Toast notification container -->
+    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <div class="workspace">
+
+      <!-- ======================================================
+           LEFT COLUMN: Upload + Preview
+           ====================================================== -->
+      <section class="workspace__left" aria-label="Image upload and preview">
+
+        <!-- Upload panel -->
+        <div class="panel upload-panel">
+          <h2 class="panel__title">Upload Images</h2>
+
+          <!-- Drop zone -->
+          <div
+            id="dropZone"
+            class="drop-zone"
+            role="button"
+            tabindex="0"
+            aria-label="Drop image files here, or click to browse"
+          >
+            <div class="drop-zone__icon" aria-hidden="true">📂</div>
+            <p class="drop-zone__text">
+              Drag &amp; drop two images here<br />
+              <span class="drop-zone__sub">or click to browse (JPG, PNG, WebP)</span>
+            </p>
+            <input
+              type="file"
+              id="fileInput"
+              class="drop-zone__input"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              aria-label="Upload image files"
+            />
+          </div>
+
+          <!-- Image slot cards -->
+          <div class="image-slots">
+            <!-- Image 1 -->
+            <div class="image-slot" id="slot1">
+              <div class="image-slot__header">
+                <span class="image-slot__label">Image 1 <span class="image-slot__badge">TOP</span></span>
+                <div class="image-slot__actions">
+                  <button class="btn btn--icon" id="clearImg1" title="Remove image 1" aria-label="Remove image 1" disabled>✕</button>
+                </div>
+              </div>
+              <div
+                class="image-slot__preview"
+                id="preview1"
+                role="button"
+                tabindex="0"
+                aria-label="Click to upload image 1"
+              >
+                <span class="image-slot__placeholder" aria-hidden="true">+</span>
+                <span class="image-slot__placeholder-text">Click or drop image here</span>
+                <input
+                  type="file"
+                  id="fileInput1"
+                  class="drop-zone__input"
+                  accept="image/jpeg,image/png,image/webp"
+                  aria-label="Upload image 1"
+                />
+              </div>
+            </div>
+
+            <!-- Swap button -->
+            <div class="swap-container">
+              <button class="btn btn--secondary btn--swap" id="swapBtn" aria-label="Swap top and bottom images">
+                <span aria-hidden="true">⇅</span> Swap
+              </button>
+            </div>
+
+            <!-- Image 2 -->
+            <div class="image-slot" id="slot2">
+              <div class="image-slot__header">
+                <span class="image-slot__label">Image 2 <span class="image-slot__badge">BOTTOM</span></span>
+                <div class="image-slot__actions">
+                  <button class="btn btn--icon" id="clearImg2" title="Remove image 2" aria-label="Remove image 2" disabled>✕</button>
+                </div>
+              </div>
+              <div
+                class="image-slot__preview"
+                id="preview2"
+                role="button"
+                tabindex="0"
+                aria-label="Click to upload image 2"
+              >
+                <span class="image-slot__placeholder" aria-hidden="true">+</span>
+                <span class="image-slot__placeholder-text">Click or drop image here</span>
+                <input
+                  type="file"
+                  id="fileInput2"
+                  class="drop-zone__input"
+                  accept="image/jpeg,image/png,image/webp"
+                  aria-label="Upload image 2"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Collage preview panel -->
+        <div class="panel preview-panel">
+          <h2 class="panel__title">
+            Collage Preview
+            <span id="previewStatus" class="panel__status" aria-live="polite"></span>
+          </h2>
+          <div class="preview-canvas-wrap" id="previewWrap">
+            <canvas id="collageCanvas" class="collage-canvas" aria-label="Collage preview canvas"></canvas>
+            <div class="preview-placeholder" id="previewPlaceholder">
+              <span aria-hidden="true">🖼</span>
+              <p>Upload two images to see your collage</p>
+            </div>
+          </div>
+
+          <!-- Export controls -->
+          <div class="export-row">
+            <div class="form-group form-group--inline">
+              <label for="exportFormat" class="form-label">Format</label>
+              <select id="exportFormat" class="form-control form-control--sm">
+                <option value="image/png">PNG</option>
+                <option value="image/jpeg" selected>JPEG</option>
+              </select>
+            </div>
+            <div class="form-group form-group--inline">
+              <label for="exportQuality" class="form-label">Quality</label>
+              <select id="exportQuality" class="form-control form-control--sm">
+                <option value="1">100%</option>
+                <option value="0.9" selected>90%</option>
+                <option value="0.75">75%</option>
+                <option value="0.6">60%</option>
+              </select>
+            </div>
+            <button class="btn btn--primary btn--download" id="downloadBtn" disabled>
+              <span aria-hidden="true">⬇</span> Download Collage
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ======================================================
+           RIGHT COLUMN: Controls + Templates
+           ====================================================== -->
+      <section class="workspace__right" aria-label="Customization controls">
+
+        <!-- Controls panel -->
+        <div class="panel controls-panel">
+          <h2 class="panel__title">Customize</h2>
+
+          <!-- Canvas & layout -->
+          <fieldset class="control-group">
+            <legend class="control-group__title">Canvas &amp; Layout</legend>
+
+            <div class="form-group">
+              <label for="canvasPreset" class="form-label">Canvas size</label>
+              <select id="canvasPreset" class="form-control">
+                <option value="1080x1350">Portrait 1080×1350</option>
+                <option value="1080x1080">Square 1080×1080</option>
+                <option value="1920x1080">Landscape 1920×1080</option>
+                <option value="custom">Custom…</option>
+              </select>
+            </div>
+
+            <div class="form-group form-group--row" id="customSizeRow" style="display:none">
+              <div class="form-group">
+                <label for="canvasWidth" class="form-label">Width (px)</label>
+                <input type="number" id="canvasWidth" class="form-control form-control--sm" value="1080" min="100" max="8000" />
+              </div>
+              <div class="form-group">
+                <label for="canvasHeight" class="form-label">Height (px)</label>
+                <input type="number" id="canvasHeight" class="form-control form-control--sm" value="1350" min="100" max="8000" />
+              </div>
+              <div class="form-group form-group--checkbox">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="lockAspect" checked />
+                  <span>Lock ratio</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="gapSize" class="form-label">
+                Gap between images
+                <span class="value-badge" id="gapSizeVal">20px</span>
+              </label>
+              <input type="range" id="gapSize" class="form-range" min="0" max="80" value="20" />
+            </div>
+
+            <div class="form-group">
+              <label for="margin" class="form-label">
+                Edge margin
+                <span class="value-badge" id="marginVal">40px</span>
+              </label>
+              <input type="range" id="margin" class="form-range" min="0" max="120" value="40" />
+            </div>
+
+            <div class="form-group">
+              <label for="hAlign" class="form-label">Horizontal alignment</label>
+              <div class="btn-group" role="group" aria-label="Horizontal alignment">
+                <button class="btn btn--option active" data-align="left" id="alignLeft" aria-pressed="false">Left</button>
+                <button class="btn btn--option active" data-align="center" id="alignCenter" aria-pressed="true">Center</button>
+                <button class="btn btn--option" data-align="right" id="alignRight" aria-pressed="false">Right</button>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Tile styling -->
+          <fieldset class="control-group">
+            <legend class="control-group__title">Tile Styling</legend>
+
+            <div class="form-group">
+              <label for="cornerRadius" class="form-label">
+                Corner radius
+                <span class="value-badge" id="cornerRadiusVal">16px</span>
+              </label>
+              <input type="range" id="cornerRadius" class="form-range" min="0" max="60" value="16" />
+            </div>
+
+            <div class="form-group form-group--checkbox">
+              <label class="checkbox-label">
+                <input type="checkbox" id="shadowEnabled" checked />
+                <span>Drop shadow</span>
+              </label>
+            </div>
+
+            <div id="shadowControls" class="control-subgroup">
+              <div class="form-group">
+                <label for="shadowBlur" class="form-label">
+                  Shadow blur
+                  <span class="value-badge" id="shadowBlurVal">24px</span>
+                </label>
+                <input type="range" id="shadowBlur" class="form-range" min="0" max="80" value="24" />
+              </div>
+              <div class="form-group">
+                <label for="shadowOpacity" class="form-label">
+                  Shadow opacity
+                  <span class="value-badge" id="shadowOpacityVal">60%</span>
+                </label>
+                <input type="range" id="shadowOpacity" class="form-range" min="0" max="100" value="60" />
+              </div>
+              <div class="form-group">
+                <label for="shadowColor" class="form-label">Shadow color</label>
+                <input type="color" id="shadowColor" class="form-color" value="#000000" />
+              </div>
+              <div class="form-group">
+                <label for="shadowOffsetX" class="form-label">
+                  Shadow offset X
+                  <span class="value-badge" id="shadowOffsetXVal">0px</span>
+                </label>
+                <input type="range" id="shadowOffsetX" class="form-range" min="-20" max="20" value="0" />
+              </div>
+              <div class="form-group">
+                <label for="shadowOffsetY" class="form-label">
+                  Shadow offset Y
+                  <span class="value-badge" id="shadowOffsetYVal">4px</span>
+                </label>
+                <input type="range" id="shadowOffsetY" class="form-range" min="-20" max="20" value="4" />
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Background -->
+          <fieldset class="control-group">
+            <legend class="control-group__title">Background</legend>
+
+            <div class="form-group">
+              <label for="bgSource" class="form-label">Background source</label>
+              <select id="bgSource" class="form-control">
+                <option value="image1">Image 1</option>
+                <option value="image2">Image 2</option>
+                <option value="color">Solid color</option>
+                <option value="none">None (transparent)</option>
+              </select>
+            </div>
+
+            <div id="bgImageControls">
+              <div class="form-group">
+                <label for="bgBlur" class="form-label">
+                  Background blur
+                  <span class="value-badge" id="bgBlurVal">20px</span>
+                </label>
+                <input type="range" id="bgBlur" class="form-range" min="0" max="60" value="20" />
+              </div>
+              <div class="form-group">
+                <label for="bgDarken" class="form-label">
+                  Background darken
+                  <span class="value-badge" id="bgDarkenVal">30%</span>
+                </label>
+                <input type="range" id="bgDarken" class="form-range" min="0" max="90" value="30" />
+              </div>
+            </div>
+
+            <div id="bgColorControl" style="display:none">
+              <div class="form-group">
+                <label for="bgColor" class="form-label">Background color</label>
+                <input type="color" id="bgColor" class="form-color" value="#1a1a2e" />
+              </div>
+            </div>
+          </fieldset>
+        </div>
+
+        <!-- Templates panel -->
+        <div class="panel templates-panel">
+          <h2 class="panel__title">Templates</h2>
+
+          <!-- Template list -->
+          <div id="templateList" class="template-list" role="list" aria-label="Saved templates">
+            <!-- populated by JS -->
+          </div>
+
+          <!-- Save new template -->
+          <div class="save-template-row">
+            <input
+              type="text"
+              id="templateName"
+              class="form-control"
+              placeholder="Template name…"
+              maxlength="40"
+              aria-label="Template name"
+            />
+            <button class="btn btn--secondary" id="saveTemplateBtn">Save</button>
+          </div>
+
+          <!-- Reset to default -->
+          <button class="btn btn--ghost btn--full" id="resetDefaultBtn">
+            ↺ Reset to default settings
+          </button>
+        </div>
+
+      </section>
+    </div><!-- /workspace -->
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="app-footer" role="contentinfo">
+    <p>Collage Maker — All processing happens in your browser. No images are uploaded to any server.</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/collageRenderer.js"></script>
+  <script src="js/templateManager.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
