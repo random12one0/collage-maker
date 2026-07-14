@@ -150,7 +150,7 @@ function readSettings() {
   // Active alignment button
   let hAlign = 'center';
   [dom.alignLeft, dom.alignCenter, dom.alignRight].forEach(btn => {
-    if (btn.classList.contains('active')) hAlign = btn.dataset.align;
+    if (btn.classList.contains('is-active')) hAlign = btn.dataset.align;
   });
 
   return {
@@ -195,7 +195,7 @@ function applySettings(s) {
 
   // Alignment
   [dom.alignLeft, dom.alignCenter, dom.alignRight].forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.align === s.hAlign);
+    btn.classList.toggle('is-active', btn.dataset.align === s.hAlign);
     btn.setAttribute('aria-pressed', String(btn.dataset.align === s.hAlign));
   });
 
@@ -576,10 +576,10 @@ dom.bgSource.addEventListener('change', () => {
 [dom.alignLeft, dom.alignCenter, dom.alignRight].forEach(btn => {
   btn.addEventListener('click', () => {
     [dom.alignLeft, dom.alignCenter, dom.alignRight].forEach(b => {
-      b.classList.remove('active');
+      b.classList.remove('is-active');
       b.setAttribute('aria-pressed', 'false');
     });
-    btn.classList.add('active');
+    btn.classList.add('is-active');
     btn.setAttribute('aria-pressed', 'true');
     scheduleRender();
   });
@@ -751,3 +751,44 @@ function init() {
 }
 
 init();
+
+/* ── Tab switching ─────────────────────────────────────────────── */
+
+(function initTabs() {
+  const tabBtns   = document.querySelectorAll('.tab-btn');
+  const tabPanels = document.querySelectorAll('.tab-panel');
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.tab;
+
+      tabBtns.forEach(b => {
+        b.classList.remove('is-active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      tabPanels.forEach(p => { p.hidden = true; });
+
+      btn.classList.add('is-active');
+      btn.setAttribute('aria-selected', 'true');
+      const panel = document.getElementById(`panel-${target}`);
+      if (panel) panel.hidden = false;
+    });
+  });
+})();
+
+/* ── Mobile: auto-scroll canvas into view when both images loaded ── */
+
+function scrollToCanvas() {
+  if (window.innerWidth < 800) {
+    dom.canvas.closest('.canvas-wrap')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+const _origSetSlot = setSlotImage;
+// Patch setSlotImage to scroll once both images are present
+function setSlotImage(slot, imgEl, dataUrl) {
+  _origSetSlot(slot, imgEl, dataUrl);
+  if (state.image1 && state.image2) {
+    setTimeout(scrollToCanvas, 200);
+  }
+}
