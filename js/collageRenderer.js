@@ -276,8 +276,10 @@ class CollagRenderer {
    * destination dw/dh, returns { sx, sy, sw, sh } for drawImage.
    */
   _coverFit(natW, natH, dw, dh) {
+    // Guard against zero dimensions
+    if (!natH || !dh) return { sx: 0, sy: 0, sw: natW, sh: natH };
     const srcAspect = natW / natH;
-    const dstAspect = dw / dh;
+    const dstAspect = dw / (dh || 1);
     let sw, sh, sx, sy;
     if (srcAspect > dstAspect) {
       // wider than destination — crop sides

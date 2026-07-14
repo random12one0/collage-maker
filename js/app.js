@@ -32,7 +32,11 @@ function showToast(message, type = 'info', duration = 3000) {
   const toast = document.createElement('div');
   toast.className = `toast toast--${type}`;
   const icons = { success: '✓', error: '✕', info: 'ℹ' };
-  toast.innerHTML = `<span aria-hidden="true">${icons[type] || ''}</span> ${message}`;
+  const iconSpan = document.createElement('span');
+  iconSpan.setAttribute('aria-hidden', 'true');
+  iconSpan.textContent = icons[type] || '';
+  toast.appendChild(iconSpan);
+  toast.appendChild(document.createTextNode(' ' + message));
   container.appendChild(toast);
 
   if (duration > 0) {
@@ -491,20 +495,24 @@ dom.canvasPreset.addEventListener('change', () => {
   scheduleRender();
 });
 
-let _aspectRatio = dom.canvasWidth.value / dom.canvasHeight.value;
+let _aspectRatio = (parseInt(dom.canvasWidth.value, 10) || 1080) / (parseInt(dom.canvasHeight.value, 10) || 1350);
 dom.canvasWidth.addEventListener('input', () => {
+  const w = parseInt(dom.canvasWidth.value, 10) || 0;
+  const h = parseInt(dom.canvasHeight.value, 10) || 0;
   if (dom.lockAspect.checked) {
-    dom.canvasHeight.value = Math.round(parseInt(dom.canvasWidth.value, 10) / _aspectRatio);
+    if (_aspectRatio > 0) dom.canvasHeight.value = Math.round(w / _aspectRatio);
   } else {
-    _aspectRatio = parseInt(dom.canvasWidth.value, 10) / parseInt(dom.canvasHeight.value, 10);
+    if (h > 0) _aspectRatio = w / h;
   }
   scheduleRender();
 });
 dom.canvasHeight.addEventListener('input', () => {
+  const w = parseInt(dom.canvasWidth.value, 10) || 0;
+  const h = parseInt(dom.canvasHeight.value, 10) || 0;
   if (dom.lockAspect.checked) {
-    dom.canvasWidth.value = Math.round(parseInt(dom.canvasHeight.value, 10) * _aspectRatio);
+    if (_aspectRatio > 0) dom.canvasWidth.value = Math.round(h * _aspectRatio);
   } else {
-    _aspectRatio = parseInt(dom.canvasWidth.value, 10) / parseInt(dom.canvasHeight.value, 10);
+    if (h > 0) _aspectRatio = w / h;
   }
   scheduleRender();
 });
