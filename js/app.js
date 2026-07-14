@@ -56,6 +56,7 @@ const state = {
   image2DataUrl: null,
   activeTemplateId: null,
   rendering: false,
+  renderPending: false,
 };
 
 /* ── DOM refs ───────────────────────────────────────────────── */
@@ -330,7 +331,10 @@ const scheduleRender = debounce(async () => {
     return;
   }
 
-  if (state.rendering) return;
+  if (state.rendering) {
+    state.renderPending = true;
+    return;
+  }
   state.rendering = true;
 
   dom.previewStatus.textContent = '⏳ Rendering…';
@@ -351,6 +355,10 @@ const scheduleRender = debounce(async () => {
     dom.previewStatus.textContent = '';
   } finally {
     state.rendering = false;
+    if (state.renderPending) {
+      state.renderPending = false;
+      scheduleRender();
+    }
   }
 }, 150);
 
