@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Collage Maker</title>
-  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/styles.css?v=20260714-2" />
 </head>
 <body>
 
@@ -16,6 +16,7 @@
       <span class="brand-icon" aria-hidden="true">🖼</span>
       <span class="brand-name">Collage Maker</span>
     </div>
+    <a class="header-link" href="custom.html">Custom collage studio</a>
     <span id="previewStatus" class="render-badge" aria-live="polite"></span>
   </header>
 
@@ -97,6 +98,10 @@
         <button class="tab-btn" role="tab" aria-selected="false"
                 aria-controls="panel-tpl" data-tab="tpl">
           <span aria-hidden="true">📋</span><span>Saved</span>
+        </button>
+        <button class="tab-btn" role="tab" aria-selected="false"
+                aria-controls="panel-batch" data-tab="batch">
+          <span aria-hidden="true">⚡</span><span>Batch</span>
         </button>
       </nav>
 
@@ -270,6 +275,24 @@
 
         </div><!-- /panel-tpl -->
 
+        <!-- Batch panel -->
+        <div class="tab-panel" id="panel-batch" role="tabpanel" hidden>
+          <div class="ctrl-group">
+            <label for="batchInput" class="ctrl-label">Upload many photos</label>
+            <input id="batchInput" class="form-input" type="file" accept="image/jpeg,image/png,image/webp" multiple />
+            <p class="batch-help">Files are paired in order: 1+2, 3+4, 5+6...</p>
+          </div>
+
+          <div class="batch-actions">
+            <button class="btn btn--secondary" id="runBatchBtn">Process Pairs</button>
+            <button class="btn btn--ghost" id="clearBatchBtn">Clear</button>
+          </div>
+
+          <div id="batchStatus" class="batch-status" aria-live="polite"></div>
+          <div id="batchList" class="batch-list" role="list" aria-label="Batch output files"></div>
+          <button class="btn btn--primary btn--full" id="downloadAllBatchBtn" disabled>Download All</button>
+        </div><!-- /panel-batch -->
+
       </div><!-- /tab-panels -->
 
       <!-- Export dock — always visible at sidebar bottom -->
@@ -295,8 +318,8 @@
 
   </div><!-- /app-shell -->
 
-  <script src="js/collageRenderer.js"></script>
-  <script src="js/templateManager.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/collageRenderer.js?v=20260714-2"></script>
+  <script src="js/templateManager.js?v=20260714-2"></script>
+  <script src="js/app.js?v=20260714-2"></script>
 </body>
 </html>

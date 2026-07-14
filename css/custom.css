@@ -1,0 +1,110 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  background: #0b0d13;
+  color: #e5e7eb;
+}
+.studio-header {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid #262b3f;
+  background: #121624;
+}
+.studio-brand { font-weight: 700; }
+.back-link {
+  color: #93c5fd;
+  text-decoration: none;
+  font-size: 0.86rem;
+}
+.studio-shell {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  min-height: calc(100vh - 56px);
+}
+.studio-controls {
+  border-right: 1px solid #262b3f;
+  background: #121624;
+  padding: 16px;
+  overflow-y: auto;
+}
+.studio-controls h1 {
+  margin: 0 0 14px;
+  font-size: 1rem;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.field span {
+  font-size: 0.76rem;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.field input, .field select {
+  border: 1px solid #374151;
+  border-radius: 8px;
+  background: #1f2937;
+  color: #e5e7eb;
+  padding: 9px 10px;
+}
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.primary {
+  width: 100%;
+  border: none;
+  background: #4f46e5;
+  color: #fff;
+  border-radius: 10px;
+  padding: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.primary:disabled {
+  background: #374151;
+  cursor: default;
+}
+.status {
+  margin-top: 10px;
+  color: #9ca3af;
+  font-size: 0.82rem;
+}
+.studio-preview {
+  position: relative;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#canvas {
+  display: none;
+  max-width: 100%;
+  max-height: calc(100vh - 96px);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+#canvas.visible { display: block; }
+.empty {
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+.empty.hidden { display: none; }
+
+@media (max-width: 900px) {
+  .studio-shell {
+    grid-template-columns: 1fr;
+  }
+  .studio-controls {
+    border-right: none;
+    border-bottom: 1px solid #262b3f;
+  }
+}

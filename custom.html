@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Custom Collage Studio</title>
+  <link rel="stylesheet" href="css/custom.css?v=20260714-1" />
+</head>
+<body>
+  <header class="studio-header">
+    <div class="studio-brand">🧩 Custom Collage Studio</div>
+    <a href="index.html" class="back-link">Back to 2-photo mode</a>
+  </header>
+
+  <main class="studio-shell">
+    <section class="studio-controls">
+      <h1>Design</h1>
+
+      <label class="field">
+        <span>Canvas preset</span>
+        <select id="preset">
+          <option value="1080x1080">Square 1080 × 1080</option>
+          <option value="1080x1350">Portrait 1080 × 1350</option>
+          <option value="1920x1080">Landscape 1920 × 1080</option>
+          <option value="custom">Custom...</option>
+        </select>
+      </label>
+
+      <div class="row" id="customSize" hidden>
+        <label class="field">
+          <span>Width</span>
+          <input type="number" id="width" value="1080" min="200" max="8000" />
+        </label>
+        <label class="field">
+          <span>Height</span>
+          <input type="number" id="height" value="1080" min="200" max="8000" />
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Images in collage</span>
+        <select id="imageCount">
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4" selected>4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Upload photos</span>
+        <input type="file" id="files" accept="image/jpeg,image/png,image/webp" multiple />
+      </label>
+
+      <label class="field">
+        <span>Gap <b id="gapVal">16px</b></span>
+        <input type="range" id="gap" min="0" max="60" value="16" />
+      </label>
+
+      <label class="field">
+        <span>Margin <b id="marginVal">24px</b></span>
+        <input type="range" id="margin" min="0" max="80" value="24" />
+      </label>
+
+      <label class="field">
+        <span>Background</span>
+        <input type="color" id="bgColor" value="#111827" />
+      </label>
+
+      <div class="row">
+        <label class="field">
+          <span>Format</span>
+          <select id="format">
+            <option value="image/jpeg" selected>JPEG</option>
+            <option value="image/png">PNG</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Quality</span>
+          <select id="quality">
+            <option value="1">100%</option>
+            <option value="0.9" selected>90%</option>
+            <option value="0.75">75%</option>
+            <option value="0.6">60%</option>
+          </select>
+        </label>
+      </div>
+
+      <button id="downloadBtn" class="primary" disabled>Download collage</button>
+      <p id="status" class="status">Upload images to begin.</p>
+    </section>
+
+    <section class="studio-preview">
+      <canvas id="canvas"></canvas>
+      <div id="empty" class="empty">Upload images to preview.</div>
+    </section>
+  </main>
+
+  <script src="js/custom.js?v=20260714-1"></script>
+</body>
+</html>

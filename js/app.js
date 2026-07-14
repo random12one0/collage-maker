@@ -57,6 +57,8 @@ const state = {
   activeTemplateId: null,
   rendering: false,
   renderPending: false,
+  batchFiles: [],
+  batchOutputs: [],
 };
 
 /* ── DOM refs ───────────────────────────────────────────────── */
@@ -127,6 +129,14 @@ const dom = {
   templateName:     $('templateName'),
   saveTemplateBtn:  $('saveTemplateBtn'),
   resetDefaultBtn:  $('resetDefaultBtn'),
+
+  // Batch
+  batchInput:       $('batchInput'),
+  runBatchBtn:      $('runBatchBtn'),
+  clearBatchBtn:    $('clearBatchBtn'),
+  downloadAllBatchBtn: $('downloadAllBatchBtn'),
+  batchStatus:      $('batchStatus'),
+  batchList:        $('batchList'),
 };
 
 /* ── Renderer & Template manager ──────────────────────────── */
@@ -722,6 +732,143 @@ dom.resetDefaultBtn.addEventListener('click', () => {
   }
 });
 
+/* ── Batch processing ─────────────────────────────────────────── */
+
+function releaseBatchUrls() {
+  state.batchOutputs.forEach(out => URL.revokeObjectURL(out.url));
+  state.batchOutputs = [];
+}
+
+function renderBatchList() {
+  if (!dom.batchList) return;
+  dom.batchList.innerHTML = '';
+
+  if (state.batchOutputs.length === 0) {
+    const empty = document.createElement('p');
+    empty.className = 'batch-help';
+    empty.textContent = 'No processed batch output yet.';
+    dom.batchList.appendChild(empty);
+    dom.downloadAllBatchBtn.disabled = true;
+    return;
+  }
+
+  state.batchOutputs.forEach(out => {
+    const row = document.createElement('div');
+    row.className = 'batch-row';
+    row.innerHTML = `
+      <div>
+        <div class="batch-row__name">${escHtml(out.name)}</div>
+        <div class="batch-row__meta">${formatBytes(out.size)}</div>
+      </div>
+      <button class="btn btn--secondary" type="button">Download</button>
+    `;
+    row.querySelector('button').addEventListener('click', () => {
+      const a = document.createElement('a');
+      a.href = out.url;
+      a.download = out.name;
+      a.click();
+    });
+    dom.batchList.appendChild(row);
+  });
+
+  dom.downloadAllBatchBtn.disabled = false;
+}
+
+async function runBatchProcessing() {
+  if (!dom.batchInput || state.batchFiles.length < 2) {
+    showToast('Select at least 2 images for batch mode.', 'error');
+    return;
+  }
+
+  const totalPairs = Math.floor(state.batchFiles.length / 2);
+  if (totalPairs === 0) {
+    showToast('Need pairs of images (2 files per collage).', 'error');
+    return;
+  }
+
+  dom.runBatchBtn.disabled = true;
+  dom.batchStatus.textContent = `Processing ${totalPairs} pairs...`;
+  releaseBatchUrls();
+  renderBatchList();
+
+  const settings = readSettings();
+  const mimeType = dom.exportFormat.value;
+  const quality = parseFloat(dom.exportQuality.value);
+  const ext = mimeType === 'image/png' ? 'png' : 'jpg';
+
+  try {
+    for (let i = 0; i < totalPairs; i++) {
+      const fileA = state.batchFiles[i * 2];
+      const fileB = state.batchFiles[i * 2 + 1];
+      dom.batchStatus.textContent = `Processing pair ${i + 1} of ${totalPairs}...`;
+
+      const [{ img: img1 }, { img: img2 }] = await Promise.all([
+        loadImageFile(fileA),
+        loadImageFile(fileB),
+      ]);
+
+      const canvas = document.createElement('canvas');
+      const localRenderer = new CollagRenderer(canvas, settings);
+      localRenderer.setImages(img1, img2);
+      await localRenderer.render();
+      const blob = await localRenderer.toBlob(mimeType, quality);
+      const url = URL.createObjectURL(blob);
+      state.batchOutputs.push({
+        name: `collage-pair-${i + 1}.${ext}`,
+        url,
+        size: blob.size,
+      });
+    }
+
+    dom.batchStatus.textContent = `Done: ${state.batchOutputs.length} collages ready.`;
+    renderBatchList();
+    showToast('Batch processing complete.', 'success');
+  } catch (err) {
+    console.error('[CollageMaker] Batch error:', err);
+    dom.batchStatus.textContent = 'Batch processing failed.';
+    showToast('Batch processing failed. Please try different files.', 'error');
+  } finally {
+    dom.runBatchBtn.disabled = false;
+  }
+}
+
+if (dom.batchInput) {
+  dom.batchInput.addEventListener('change', e => {
+    state.batchFiles = [...(e.target.files || [])].filter(f => f.type.startsWith('image/'));
+    const pairCount = Math.floor(state.batchFiles.length / 2);
+    const hasOdd = state.batchFiles.length % 2 === 1;
+    dom.batchStatus.textContent = `${state.batchFiles.length} files selected (${pairCount} pairs).${hasOdd ? ' Last image will be ignored.' : ''}`;
+  });
+}
+
+if (dom.runBatchBtn) {
+  dom.runBatchBtn.addEventListener('click', runBatchProcessing);
+}
+
+if (dom.clearBatchBtn) {
+  dom.clearBatchBtn.addEventListener('click', () => {
+    if (dom.batchInput) dom.batchInput.value = '';
+    state.batchFiles = [];
+    dom.batchStatus.textContent = 'Cleared.';
+    releaseBatchUrls();
+    renderBatchList();
+  });
+}
+
+if (dom.downloadAllBatchBtn) {
+  dom.downloadAllBatchBtn.addEventListener('click', () => {
+    if (state.batchOutputs.length === 0) return;
+    state.batchOutputs.forEach((out, idx) => {
+      setTimeout(() => {
+        const a = document.createElement('a');
+        a.href = out.url;
+        a.download = out.name;
+        a.click();
+      }, idx * 250);
+    });
+  });
+}
+
 /* ── Helpers ─────────────────────────────────────────────────── */
 
 function escHtml(str) {
@@ -730,6 +877,12 @@ function escHtml(str) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 /* ── Init ─────────────────────────────────────────────────────── */
@@ -749,6 +902,7 @@ function init() {
   toggleCustomSizeRow();
   updateBgSourceVisibility();
   dom.shadowControls.style.display = dom.shadowEnabled.checked ? '' : 'none';
+  renderBatchList();
 }
 
 init();

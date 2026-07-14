@@ -76,6 +76,16 @@ body {
 .brand { display: flex; align-items: center; gap: var(--sp-sm); }
 .brand-icon { font-size: 1.2rem; line-height: 1; }
 .brand-name { font-size: 1rem; font-weight: 700; letter-spacing: -0.02em; }
+.header-link {
+  font-size: 0.72rem;
+  color: var(--c-accent);
+  text-decoration: none;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface-2);
+  padding: 4px 8px;
+  border-radius: var(--r-sm);
+}
+.header-link:hover { border-color: var(--c-accent); color: var(--c-accent-h); }
 .render-badge { font-size: 0.72rem; font-weight: 600; color: var(--c-muted); }
 
 /* -- App Shell -------------------------------------------------- */
@@ -658,6 +668,51 @@ body {
 .tpl-save { display: flex; gap: var(--sp-sm); }
 .tpl-save .form-input { flex: 1; }
 .tpl-save .btn { flex-shrink: 0; }
+
+/* -- Batch ------------------------------------------------------ */
+.batch-help {
+  font-size: 0.75rem;
+  color: var(--c-muted);
+}
+.batch-actions {
+  display: flex;
+  gap: var(--sp-sm);
+}
+.batch-status {
+  font-size: 0.78rem;
+  color: var(--c-muted);
+  min-height: 20px;
+}
+.batch-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+}
+.batch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-sm);
+  padding: 8px 10px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+  background: var(--c-surface-2);
+}
+.batch-row__name {
+  font-size: 0.78rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.batch-row__meta {
+  font-size: 0.68rem;
+  color: var(--c-muted);
+}
+.batch-row .btn {
+  min-height: 30px;
+  padding: 6px 10px;
+  font-size: 0.74rem;
+}
 
 /* -- Toasts ---------------------------------------------------- */
 .toast-container {
