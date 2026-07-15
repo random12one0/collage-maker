@@ -56,6 +56,9 @@ const state = {
   image2DataUrl: null,
   activeTemplateId: null,
   rendering: false,
+  renderPending: false,
+  batchFiles: [],
+  batchOutputs: [],
 };
 
 /* ── DOM refs ───────────────────────────────────────────────── */
@@ -126,12 +129,42 @@ const dom = {
   templateName:     $('templateName'),
   saveTemplateBtn:  $('saveTemplateBtn'),
   resetDefaultBtn:  $('resetDefaultBtn'),
+
+  // Batch
+  batchInput:       $('batchInput'),
+  runBatchBtn:      $('runBatchBtn'),
+  clearBatchBtn:    $('clearBatchBtn'),
+  downloadAllBatchBtn: $('downloadAllBatchBtn'),
+  batchStatus:      $('batchStatus'),
+  batchList:        $('batchList'),
+
+  // Help
+  openHelpBtn:      $('openHelpBtn'),
+  helpDialog:       $('helpDialog'),
+
+  // App shell quick actions
+  installAppBtn:    $('installAppBtn'),
+  quickUploadBtn:   $('quickUploadBtn'),
+  quickSwapBtn:     $('quickSwapBtn'),
+  quickDownloadBtn: $('quickDownloadBtn'),
 };
 
 /* ── Renderer & Template manager ──────────────────────────── */
 
 const renderer = new CollagRenderer(dom.canvas);
 const templateManager = new TemplateManager();
+let deferredInstallPrompt = null;
+const STORAGE_KEYS = {
+  activeTab: 'collageMaker_activeTab',
+  exportFormat: 'collageMaker_exportFormat',
+  exportQuality: 'collageMaker_exportQuality',
+};
+
+function syncHeaderHeightVar() {
+  const header = document.querySelector('.app-header');
+  if (!header) return;
+  document.documentElement.style.setProperty('--header-real-h', `${header.offsetHeight}px`);
+}
 
 /* ── Settings helpers ───────────────────────────────────────── */
 
@@ -149,7 +182,7 @@ function readSettings() {
   // Active alignment button
   let hAlign = 'center';
   [dom.alignLeft, dom.alignCenter, dom.alignRight].forEach(btn => {
-    if (btn.classList.contains('active')) hAlign = btn.dataset.align;
+    if (btn.classList.contains('is-active')) hAlign = btn.dataset.align;
   });
 
   return {
@@ -194,7 +227,7 @@ function applySettings(s) {
 
   // Alignment
   [dom.alignLeft, dom.alignCenter, dom.alignRight].forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.align === s.hAlign);
+    btn.classList.toggle('is-active', btn.dataset.align === s.hAlign);
     btn.setAttribute('aria-pressed', String(btn.dataset.align === s.hAlign));
   });
 
@@ -267,6 +300,7 @@ function setSlotImage(slot, imgEl, dataUrl) {
     dom.slot2.classList.add('has-image');
   }
   renderer.setImages(state.image1, state.image2);
+  if (state.image1 && state.image2) setTimeout(scrollToCanvas, 200);
   scheduleRender();
 }
 
@@ -330,7 +364,10 @@ const scheduleRender = debounce(async () => {
     return;
   }
 
-  if (state.rendering) return;
+  if (state.rendering) {
+    state.renderPending = true;
+    return;
+  }
   state.rendering = true;
 
   dom.previewStatus.textContent = '⏳ Rendering…';
@@ -351,6 +388,10 @@ const scheduleRender = debounce(async () => {
     dom.previewStatus.textContent = '';
   } finally {
     state.rendering = false;
+    if (state.renderPending) {
+      state.renderPending = false;
+      scheduleRender();
+    }
   }
 }, 150);
 
@@ -398,6 +439,7 @@ dom.dropZone.addEventListener('dragover', e => { e.preventDefault(); dom.dropZon
 dom.dropZone.addEventListener('dragleave', () => dom.dropZone.classList.remove('drag-over'));
 dom.dropZone.addEventListener('drop', e => {
   e.preventDefault();
+  if (e.target.closest('.img-slot__body')) return; // slot-specific drop handler owns this
   dom.dropZone.classList.remove('drag-over');
   handleFileDrop(e.dataTransfer.files, null);
 });
@@ -440,10 +482,18 @@ dom.preview2.addEventListener('keydown', e => {
   { el: dom.preview1, slot: 1 },
   { el: dom.preview2, slot: 2 },
 ].forEach(({ el, slot }) => {
-  el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('drag-over'); });
-  el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+  el.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    el.classList.add('drag-over');
+  });
+  el.addEventListener('dragleave', e => {
+    e.stopPropagation();
+    el.classList.remove('drag-over');
+  });
   el.addEventListener('drop', e => {
     e.preventDefault();
+    e.stopPropagation();
     el.classList.remove('drag-over');
     handleFileDrop(e.dataTransfer.files, slot);
   });
@@ -477,6 +527,12 @@ dom.swapBtn.addEventListener('click', () => {
 
   renderer.setImages(state.image1, state.image2);
   scheduleRender();
+});
+
+if (dom.quickUploadBtn) dom.quickUploadBtn.addEventListener('click', () => dom.fileInput.click());
+if (dom.quickSwapBtn) dom.quickSwapBtn.addEventListener('click', () => dom.swapBtn.click());
+if (dom.quickDownloadBtn) dom.quickDownloadBtn.addEventListener('click', () => {
+  if (!dom.downloadBtn.disabled) dom.downloadBtn.click();
 });
 
 // ── Canvas preset & custom size ───────────────────────────────
@@ -563,15 +619,35 @@ dom.bgSource.addEventListener('change', () => {
   scheduleRender();
 });
 
+function switchToTab(target) {
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabPanels = document.querySelectorAll('.tab-panel');
+  let found = false;
+
+  tabBtns.forEach(b => {
+    const isActive = b.dataset.tab === target;
+    b.classList.toggle('is-active', isActive);
+    b.setAttribute('aria-selected', String(isActive));
+    if (isActive) found = true;
+  });
+  tabPanels.forEach(p => { p.hidden = true; });
+
+  const panel = document.getElementById(`panel-${target}`);
+  if (panel) panel.hidden = false;
+  if (found) {
+    try { localStorage.setItem(STORAGE_KEYS.activeTab, target); } catch (_) {}
+  }
+}
+
 // ── Alignment buttons ─────────────────────────────────────────
 
 [dom.alignLeft, dom.alignCenter, dom.alignRight].forEach(btn => {
   btn.addEventListener('click', () => {
     [dom.alignLeft, dom.alignCenter, dom.alignRight].forEach(b => {
-      b.classList.remove('active');
+      b.classList.remove('is-active');
       b.setAttribute('aria-pressed', 'false');
     });
-    btn.classList.add('active');
+    btn.classList.add('is-active');
     btn.setAttribute('aria-pressed', 'true');
     scheduleRender();
   });
@@ -610,6 +686,13 @@ dom.downloadBtn.addEventListener('click', async () => {
     dom.downloadBtn.disabled = false;
     dom.downloadBtn.innerHTML = '<span aria-hidden="true">⬇</span> Download Collage';
   }
+});
+
+dom.exportFormat.addEventListener('change', () => {
+  try { localStorage.setItem(STORAGE_KEYS.exportFormat, dom.exportFormat.value); } catch (_) {}
+});
+dom.exportQuality.addEventListener('change', () => {
+  try { localStorage.setItem(STORAGE_KEYS.exportQuality, dom.exportQuality.value); } catch (_) {}
 });
 
 /* ── Templates ──────────────────────────────────────────────── */
@@ -713,6 +796,145 @@ dom.resetDefaultBtn.addEventListener('click', () => {
   }
 });
 
+/* ── Batch processing ─────────────────────────────────────────── */
+
+function releaseBatchUrls() {
+  state.batchOutputs.forEach(out => URL.revokeObjectURL(out.url));
+  state.batchOutputs = [];
+}
+
+function renderBatchList() {
+  if (!dom.batchList) return;
+  dom.batchList.innerHTML = '';
+
+  if (state.batchOutputs.length === 0) {
+    const empty = document.createElement('p');
+    empty.className = 'batch-help';
+    empty.textContent = 'No processed batch output yet.';
+    dom.batchList.appendChild(empty);
+    dom.downloadAllBatchBtn.disabled = true;
+    return;
+  }
+
+  state.batchOutputs.forEach(out => {
+    const row = document.createElement('div');
+    row.className = 'batch-row';
+    row.innerHTML = `
+      <div>
+        <div class="batch-row__name">${escHtml(out.name)}</div>
+        <div class="batch-row__meta">${formatBytes(out.size)}</div>
+      </div>
+      <button class="btn btn--secondary" type="button">Download</button>
+    `;
+    row.querySelector('button').addEventListener('click', () => {
+      const a = document.createElement('a');
+      a.href = out.url;
+      a.download = out.name;
+      a.click();
+    });
+    dom.batchList.appendChild(row);
+  });
+
+  dom.downloadAllBatchBtn.disabled = false;
+}
+
+async function runBatchProcessing() {
+  if (!dom.batchInput || state.batchFiles.length < 2) {
+    showToast('Select at least 2 images for batch mode.', 'error');
+    return;
+  }
+
+  const totalPairs = Math.floor(state.batchFiles.length / 2);
+  if (totalPairs === 0) {
+    showToast('Need pairs of images (2 files per collage).', 'error');
+    return;
+  }
+
+  dom.runBatchBtn.disabled = true;
+  dom.batchStatus.textContent = `Processing ${totalPairs} pairs...`;
+  releaseBatchUrls();
+  renderBatchList();
+
+  const settings = readSettings();
+  const mimeType = dom.exportFormat.value;
+  const quality = parseFloat(dom.exportQuality.value);
+  const ext = mimeType === 'image/png' ? 'png' : 'jpg';
+
+  try {
+    for (let i = 0; i < totalPairs; i++) {
+      const fileA = state.batchFiles[i * 2];
+      const fileB = state.batchFiles[i * 2 + 1];
+      dom.batchStatus.textContent = `Processing pair ${i + 1} of ${totalPairs}...`;
+
+      const [{ img: img1 }, { img: img2 }] = await Promise.all([
+        loadImageFile(fileA),
+        loadImageFile(fileB),
+      ]);
+
+      const canvas = document.createElement('canvas');
+      const localRenderer = new CollagRenderer(canvas, settings);
+      localRenderer.setImages(img1, img2);
+      await localRenderer.render();
+      const blob = await localRenderer.toBlob(mimeType, quality);
+      const url = URL.createObjectURL(blob);
+      state.batchOutputs.push({
+        name: `collage-pair-${i + 1}.${ext}`,
+        url,
+        size: blob.size,
+      });
+    }
+
+    dom.batchStatus.textContent = `Done: ${state.batchOutputs.length} collages ready.`;
+    renderBatchList();
+    showToast('Batch processing complete.', 'success');
+  } catch (err) {
+    console.error('[CollageMaker] Batch error:', err);
+    dom.batchStatus.textContent = 'Batch processing failed.';
+    showToast('Batch processing failed. Please try different files.', 'error');
+  } finally {
+    dom.runBatchBtn.disabled = false;
+  }
+}
+
+if (dom.batchInput) {
+  dom.batchInput.addEventListener('change', e => {
+    state.batchFiles = [...(e.target.files || [])].filter(f => f.type.startsWith('image/'));
+    const pairCount = Math.floor(state.batchFiles.length / 2);
+    const hasOdd = state.batchFiles.length % 2 === 1;
+    dom.batchStatus.textContent = `${state.batchFiles.length} files selected (${pairCount} pairs).${hasOdd ? ' Last image will be ignored.' : ''}`;
+  });
+}
+
+if (dom.runBatchBtn) {
+  dom.runBatchBtn.addEventListener('click', runBatchProcessing);
+}
+
+if (dom.clearBatchBtn) {
+  dom.clearBatchBtn.addEventListener('click', () => {
+    if (dom.batchInput) dom.batchInput.value = '';
+    state.batchFiles = [];
+    dom.batchStatus.textContent = 'Cleared.';
+    releaseBatchUrls();
+    renderBatchList();
+  });
+}
+
+if (dom.downloadAllBatchBtn) {
+  dom.downloadAllBatchBtn.addEventListener('click', () => {
+    if (state.batchOutputs.length === 0) return;
+    state.batchOutputs.forEach((out, idx) => {
+      setTimeout(() => {
+        const a = document.createElement('a');
+        a.href = out.url;
+        a.download = out.name;
+        a.click();
+      }, idx * 250);
+    });
+  });
+}
+
+window.addEventListener('beforeunload', releaseBatchUrls);
+
 /* ── Helpers ─────────────────────────────────────────────────── */
 
 function escHtml(str) {
@@ -723,9 +945,30 @@ function escHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
+function formatBytes(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 /* ── Init ─────────────────────────────────────────────────────── */
 
 function init() {
+  syncHeaderHeightVar();
+  window.addEventListener('resize', syncHeaderHeightVar);
+  window.addEventListener('orientationchange', syncHeaderHeightVar);
+  // Restore lightweight user preferences
+  try {
+    const savedFormat = localStorage.getItem(STORAGE_KEYS.exportFormat);
+    const savedQuality = localStorage.getItem(STORAGE_KEYS.exportQuality);
+    if (savedFormat && [...dom.exportFormat.options].some(o => o.value === savedFormat)) {
+      dom.exportFormat.value = savedFormat;
+    }
+    if (savedQuality && [...dom.exportQuality.options].some(o => o.value === savedQuality)) {
+      dom.exportQuality.value = savedQuality;
+    }
+  } catch (_) {}
+
   // Apply default settings on load
   const defaultTpl = templateManager.getById('__default__');
   if (defaultTpl) {
@@ -740,6 +983,105 @@ function init() {
   toggleCustomSizeRow();
   updateBgSourceVisibility();
   dom.shadowControls.style.display = dom.shadowEnabled.checked ? '' : 'none';
+  renderBatchList();
+
+  // Restore last active tab
+  let preferredTab = 'layout';
+  try {
+    preferredTab = localStorage.getItem(STORAGE_KEYS.activeTab) || 'layout';
+  } catch (_) {}
+  switchToTab(preferredTab);
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js?v=20260714-6').catch(err => {
+        console.error('[CollageMaker] SW registration failed:', err);
+      });
+    });
+  }
 }
 
 init();
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  if (dom.installAppBtn) dom.installAppBtn.hidden = false;
+});
+
+if (dom.installAppBtn) {
+  dom.installAppBtn.addEventListener('click', async () => {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    try { await deferredInstallPrompt.userChoice; } catch (_) {}
+    deferredInstallPrompt = null;
+    dom.installAppBtn.hidden = true;
+  });
+}
+
+/* ── Tab switching ─────────────────────────────────────────────── */
+
+(function initTabs() {
+  const tabBtns   = document.querySelectorAll('.tab-btn');
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchToTab(btn.dataset.tab);
+    });
+  });
+})();
+
+if (dom.openHelpBtn && dom.helpDialog) {
+  dom.openHelpBtn.addEventListener('click', () => {
+    if (dom.helpDialog.open) dom.helpDialog.close();
+    else dom.helpDialog.showModal();
+  });
+}
+
+window.addEventListener('keydown', e => {
+  // Ignore if typing in form controls
+  const tag = (document.activeElement?.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+  if (e.key === '?') {
+    e.preventDefault();
+    if (dom.helpDialog) {
+      if (dom.helpDialog.open) dom.helpDialog.close();
+      else dom.helpDialog.showModal();
+    }
+    return;
+  }
+
+  const tabMap = { '1': 'layout', '2': 'style', '3': 'bg', '4': 'tpl', '5': 'batch' };
+  if (tabMap[e.key]) {
+    e.preventDefault();
+    switchToTab(tabMap[e.key]);
+    return;
+  }
+
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+    e.preventDefault();
+    if (!dom.downloadBtn.disabled) dom.downloadBtn.click();
+    return;
+  }
+
+  if (e.key.toLowerCase() === 'x') {
+    e.preventDefault();
+    dom.swapBtn.click();
+    return;
+  }
+
+  if (e.key.toLowerCase() === 'u') {
+    e.preventDefault();
+    dom.fileInput.click();
+  }
+});
+
+/* ── Mobile: auto-scroll canvas into view when both images loaded ── */
+
+function scrollToCanvas() {
+  if (window.innerWidth < 800) {
+    document.getElementById('previewWrap')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}

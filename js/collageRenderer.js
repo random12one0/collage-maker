@@ -218,7 +218,10 @@ class CollagRenderer {
     const { x, y, w, h, img } = tile;
     const r = Math.min(s.cornerRadius, w / 2, h / 2);
 
-    // Shadow
+    ctx.save();
+
+    // Step 1: Fill the tile shape with shadow active so the shadow is cast correctly.
+    // The fill is immediately covered by the image in Step 2.
     if (s.shadow.enabled) {
       const { blur, opacity, color, offsetX, offsetY } = s.shadow;
       const hexColor = this._hexToRgb(color);
@@ -226,18 +229,18 @@ class CollagRenderer {
       ctx.shadowBlur    = blur;
       ctx.shadowOffsetX = offsetX;
       ctx.shadowOffsetY = offsetY;
+      this._roundedRect(ctx, x, y, w, h, r);
+      ctx.fillStyle = '#fff';
+      ctx.fill();
     }
 
-    // Clip region (rounded rect)
-    ctx.save();
-    this._roundedRect(ctx, x, y, w, h, r);
-    ctx.clip();
-
-    // Clear shadow inside clip so image doesn't get shadowed from inside
+    // Step 2: Clear shadow, clip to the rounded rect, then draw the image.
     ctx.shadowColor   = 'transparent';
     ctx.shadowBlur    = 0;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 0;
+    this._roundedRect(ctx, x, y, w, h, r);
+    ctx.clip();
 
     // Draw image (cover-fit within tile)
     const { sx, sy, sw, sh } = this._coverFit(
@@ -246,12 +249,6 @@ class CollagRenderer {
     ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
 
     ctx.restore();
-
-    // Reset shadow for next draw
-    ctx.shadowColor   = 'transparent';
-    ctx.shadowBlur    = 0;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
   }
 
   /**

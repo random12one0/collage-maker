@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#121624" />
+  <meta name="description" content="Advanced collage studio with projects, history, filters, text, and export presets." />
+  <title>Custom Collage Studio</title>
+  <link rel="manifest" href="manifest.webmanifest?v=20260714-1" />
+  <link rel="stylesheet" href="css/custom.css?v=20260714-4" />
+</head>
+<body class="simple-mode">
+  <header class="studio-header">
+    <div class="studio-brand">🧩 Custom Collage Studio</div>
+    <div class="studio-head-actions">
+      <label class="simple-toggle">
+        <input id="simpleModeToggle" type="checkbox" checked />
+        <span>Simple mode</span>
+      </label>
+      <button id="installStudioBtn" class="ghost" type="button" hidden>Install app</button>
+      <button id="tipsBtn" class="ghost">Tips</button>
+      <a href="index.html" class="back-link">Back to quick mode</a>
+    </div>
+  </header>
+
+  <main class="studio-shell">
+    <aside class="studio-controls" aria-label="Studio controls">
+      <section class="panel panel--project" data-advanced="true">
+        <h2>Project</h2>
+        <div class="row">
+          <label class="field">
+            <span>Name</span>
+            <input id="projectName" type="text" maxlength="40" value="My collage project" />
+          </label>
+          <label class="field">
+            <span>Saved projects</span>
+            <select id="projectSelect"></select>
+          </label>
+        </div>
+        <div class="row row-btn">
+          <button id="newProjectBtn" class="ghost">New</button>
+          <button id="saveProjectBtn" class="primary">Save</button>
+          <button id="loadProjectBtn" class="ghost">Load</button>
+          <button id="deleteProjectBtn" class="danger">Delete</button>
+        </div>
+        <div class="row row-btn">
+          <button id="undoBtn" class="ghost">Undo</button>
+          <button id="redoBtn" class="ghost">Redo</button>
+          <button id="shareBtn" class="ghost">Copy share link</button>
+        </div>
+        <input id="shareUrl" class="mono" readonly />
+      </section>
+
+      <section class="panel panel--layout">
+        <h2>Layout</h2>
+        <div class="row">
+          <label class="field">
+            <span>Output preset</span>
+            <select id="outputPreset">
+              <option value="custom">Custom</option>
+              <option value="insta-square">Instagram Square</option>
+              <option value="insta-portrait">Instagram Portrait</option>
+              <option value="story">Story 1080×1920</option>
+              <option value="youtube">YouTube Thumbnail</option>
+              <option value="landscape-hd">Landscape HD</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Canvas preset</span>
+            <select id="preset">
+              <option value="1080x1080">Square 1080×1080</option>
+              <option value="1080x1350">Portrait 1080×1350</option>
+              <option value="1920x1080">Landscape 1920×1080</option>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="row" id="customSize" hidden>
+          <label class="field"><span>Width</span><input type="number" id="width" value="1080" min="200" max="8000" /></label>
+          <label class="field"><span>Height</span><input type="number" id="height" value="1080" min="200" max="8000" /></label>
+        </div>
+
+        <div class="row">
+          <label class="field">
+            <span>Image count</span>
+            <select id="imageCount">
+              <option value="2">2</option><option value="3">3</option><option value="4" selected>4</option>
+              <option value="5">5</option><option value="6">6</option><option value="8">8</option><option value="9">9</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Layout mode</span>
+            <select id="layoutMode">
+              <option value="grid">Grid</option>
+              <option value="masonry">Masonry</option>
+              <option value="freeform">Freeform</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="row">
+          <label class="field">
+            <span>Gap <b id="gapVal">16px</b></span>
+            <input type="range" id="gap" min="0" max="80" value="16" />
+          </label>
+          <label class="field">
+            <span>Margin <b id="marginVal">24px</b></span>
+            <input type="range" id="margin" min="0" max="120" value="24" />
+          </label>
+        </div>
+
+        <div class="row">
+          <label class="field inline"><input id="showGuides" type="checkbox" /> Show guides</label>
+          <label class="field inline"><input id="compareEnabled" type="checkbox" /> Before/after compare</label>
+          <label class="field" id="compareWrap" hidden>
+            <span>Compare split <b id="compareVal">50%</b></span>
+            <input type="range" id="compareSplit" min="0" max="100" value="50" />
+          </label>
+        </div>
+      </section>
+
+      <section class="panel panel--background" data-advanced="true">
+        <h2>Background & filters</h2>
+        <div class="row">
+          <label class="field">
+            <span>Background mode</span>
+            <select id="bgMode">
+              <option value="solid">Solid</option>
+              <option value="gradient">Gradient</option>
+              <option value="texture">Texture</option>
+            </select>
+          </label>
+          <label class="field"><span>Color A</span><input type="color" id="bgColor1" value="#111827" /></label>
+          <label class="field"><span>Color B</span><input type="color" id="bgColor2" value="#1f2937" /></label>
+        </div>
+        <div class="row">
+          <label class="field"><span>Brightness <b id="briVal">100%</b></span><input type="range" id="brightness" min="50" max="150" value="100" /></label>
+          <label class="field"><span>Contrast <b id="conVal">100%</b></span><input type="range" id="contrast" min="50" max="150" value="100" /></label>
+        </div>
+        <div class="row">
+          <label class="field"><span>Saturation <b id="satVal">100%</b></span><input type="range" id="saturation" min="0" max="180" value="100" /></label>
+          <label class="field"><span>Warmth <b id="warmVal">0%</b></span><input type="range" id="warmth" min="-40" max="40" value="0" /></label>
+        </div>
+      </section>
+
+      <section class="panel panel--images">
+        <h2>Images</h2>
+        <label class="field">
+          <span>Upload photos</span>
+          <input type="file" id="files" accept="image/jpeg,image/png,image/webp" multiple />
+        </label>
+        <div id="imageList" class="image-list" role="list"></div>
+        <div class="row row-btn">
+          <button id="moveUpBtn" class="ghost">Move up</button>
+          <button id="moveDownBtn" class="ghost">Move down</button>
+        </div>
+
+        <div class="row">
+          <label class="field"><span>Selected</span><select id="selectedImage"></select></label>
+          <label class="field"><span>Zoom <b id="zoomVal">100%</b></span><input type="range" id="zoom" min="50" max="220" value="100" /></label>
+        </div>
+        <div class="row">
+          <label class="field"><span>Pan X <b id="panXVal">0</b></span><input type="range" id="panX" min="-400" max="400" value="0" /></label>
+          <label class="field"><span>Pan Y <b id="panYVal">0</b></span><input type="range" id="panY" min="-400" max="400" value="0" /></label>
+        </div>
+        <div class="row">
+          <label class="field"><span>Rotate <b id="rotVal">0°</b></span><input type="range" id="rotate" min="-180" max="180" value="0" /></label>
+          <label class="field inline"><input id="flipH" type="checkbox" /> Flip H</label>
+          <label class="field inline"><input id="flipV" type="checkbox" /> Flip V</label>
+        </div>
+
+        <div id="freeformEditor" class="freeform-editor" hidden>
+          <h3>Freeform tile frame</h3>
+          <div class="row">
+            <label class="field"><span>X <b id="fxVal">0%</b></span><input type="range" id="frameX" min="0" max="100" value="0" /></label>
+            <label class="field"><span>Y <b id="fyVal">0%</b></span><input type="range" id="frameY" min="0" max="100" value="0" /></label>
+          </div>
+          <div class="row">
+            <label class="field"><span>W <b id="fwVal">30%</b></span><input type="range" id="frameW" min="10" max="100" value="30" /></label>
+            <label class="field"><span>H <b id="fhVal">30%</b></span><input type="range" id="frameH" min="10" max="100" value="30" /></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel panel--text" data-advanced="true">
+        <h2>Text overlays</h2>
+        <div id="textList" class="text-list"></div>
+        <div class="row row-btn">
+          <button id="addTextBtn" class="ghost">Add text</button>
+          <button id="removeTextBtn" class="danger">Remove selected</button>
+        </div>
+        <label class="field"><span>Selected text</span><select id="selectedText"></select></label>
+        <label class="field"><span>Content</span><input id="textContent" type="text" maxlength="80" /></label>
+        <div class="row">
+          <label class="field"><span>Size</span><input id="textSize" type="number" min="10" max="240" value="52" /></label>
+          <label class="field"><span>Color</span><input id="textColor" type="color" value="#ffffff" /></label>
+          <label class="field"><span>Align</span><select id="textAlign"><option>left</option><option selected>center</option><option>right</option></select></label>
+        </div>
+        <div class="row">
+          <label class="field"><span>X</span><input id="textX" type="range" min="0" max="100" value="50" /></label>
+          <label class="field"><span>Y</span><input id="textY" type="range" min="0" max="100" value="12" /></label>
+        </div>
+      </section>
+
+      <section class="panel panel--export">
+        <h2>Import, export & accessibility</h2>
+        <div class="row row-btn">
+          <button id="exportTemplateBtn" class="ghost">Export template JSON</button>
+          <button id="importTemplateBtn" class="ghost">Import template JSON</button>
+          <input type="file" id="templateInput" accept="application/json" hidden />
+        </div>
+
+        <div class="row">
+          <label class="field"><span>Format</span><select id="format"><option value="image/jpeg" selected>JPEG</option><option value="image/png">PNG</option></select></label>
+          <label class="field"><span>Quality</span><select id="quality"><option value="1">100%</option><option value="0.9" selected>90%</option><option value="0.75">75%</option><option value="0.6">60%</option></select></label>
+        </div>
+
+        <div class="row row-btn">
+          <button id="downloadBtn" class="primary" disabled>Download collage</button>
+          <button id="downloadZipBtn" class="ghost" disabled>Export ZIP package</button>
+        </div>
+
+        <div class="row">
+          <label class="field inline"><input id="a11yContrast" type="checkbox" /> High contrast</label>
+          <label class="field inline"><input id="a11yLargeUi" type="checkbox" /> Larger controls</label>
+          <label class="field inline"><input id="a11yReduceMotion" type="checkbox" /> Reduced motion</label>
+        </div>
+      </section>
+
+      <p id="status" class="status">Upload images to begin.</p>
+      <p id="qualityHint" class="quality-hint"></p>
+    </aside>
+
+    <section class="studio-preview">
+      <canvas id="canvas"></canvas>
+      <div id="empty" class="empty">Upload images to preview.</div>
+    </section>
+  </main>
+
+  <div class="studio-mobile-dock" aria-label="Studio quick actions">
+    <button id="dockControlsBtn" class="ghost" type="button">Controls</button>
+    <button id="dockPreviewBtn" class="ghost" type="button">Preview</button>
+    <button id="dockExportBtn" class="primary" type="button">Export</button>
+  </div>
+
+  <dialog id="tipsDialog" class="tips-dialog">
+    <form method="dialog" class="tips-card">
+      <h2>Welcome to Custom Studio</h2>
+      <ol>
+        <li>Upload images and set image count.</li>
+        <li>Pick a layout mode (Grid, Masonry, or Freeform).</li>
+        <li>Tune each image with zoom, pan, rotate, and flip.</li>
+        <li>Add text, filters, and compare before/after.</li>
+        <li>Save project or export ZIP package.</li>
+      </ol>
+      <button class="primary" type="submit">Start designing</button>
+    </form>
+  </dialog>
+
+  <script src="js/custom.js?v=20260714-5"></script>
+</body>
+</html>
