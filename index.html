@@ -21,6 +21,7 @@
     </div>
     <div class="header-actions">
       <a class="header-link" href="custom.html">Custom collage studio</a>
+      <button class="header-link header-link--btn" id="installAppBtn" type="button" hidden>Install app</button>
       <button class="header-help-btn" id="openHelpBtn" type="button" aria-haspopup="dialog" aria-controls="helpDialog">?</button>
     </div>
     <span id="previewStatus" class="render-badge" aria-live="polite"></span>
@@ -324,6 +325,12 @@
 
   </div><!-- /app-shell -->
 
+  <div class="app-quick-dock" aria-label="Quick actions">
+    <button id="quickUploadBtn" class="app-quick-dock__btn" type="button">Upload</button>
+    <button id="quickSwapBtn" class="app-quick-dock__btn" type="button">Swap</button>
+    <button id="quickDownloadBtn" class="app-quick-dock__btn app-quick-dock__btn--primary" type="button">Download</button>
+  </div>
+
   <dialog id="helpDialog" class="help-dialog" aria-labelledby="helpTitle">
     <form method="dialog" class="help-dialog__card">
       <div class="help-dialog__head">
@@ -342,6 +349,6 @@
 
   <script src="js/collageRenderer.js?v=20260714-3"></script>
   <script src="js/templateManager.js?v=20260714-3"></script>
-  <script src="js/app.js?v=20260714-4"></script>
+  <script src="js/app.js?v=20260714-5"></script>
 </body>
 </html>

@@ -28,6 +28,10 @@
     tipsBtn: $('tipsBtn'),
     tipsDialog: $('tipsDialog'),
     simpleModeToggle: $('simpleModeToggle'),
+    installStudioBtn: $('installStudioBtn'),
+    dockControlsBtn: $('dockControlsBtn'),
+    dockPreviewBtn: $('dockPreviewBtn'),
+    dockExportBtn: $('dockExportBtn'),
 
     outputPreset: $('outputPreset'),
     preset: $('preset'),
@@ -127,6 +131,7 @@
     historyFuture: [],
   };
   let applyingState = false;
+  let deferredInstallPrompt = null;
 
   function uid(prefix) {
     return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
@@ -1217,6 +1222,15 @@
     dom.a11yReduceMotion.addEventListener('change', () => { state.a11y.reduceMotion = dom.a11yReduceMotion.checked; onAnyChange(true); });
 
     dom.tipsBtn.addEventListener('click', () => dom.tipsDialog.showModal());
+    if (dom.dockControlsBtn) dom.dockControlsBtn.addEventListener('click', () => {
+      document.querySelector('.studio-controls')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    if (dom.dockPreviewBtn) dom.dockPreviewBtn.addEventListener('click', () => {
+      document.querySelector('.studio-preview')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    if (dom.dockExportBtn) dom.dockExportBtn.addEventListener('click', () => {
+      if (!dom.downloadBtn.disabled) dom.downloadBtn.click();
+    });
 
     window.addEventListener('keydown', e => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
@@ -1235,6 +1249,21 @@
           onAnyChange(true);
         }
       }
+    });
+  }
+
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    if (dom.installStudioBtn) dom.installStudioBtn.hidden = false;
+  });
+  if (dom.installStudioBtn) {
+    dom.installStudioBtn.addEventListener('click', async () => {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      try { await deferredInstallPrompt.userChoice; } catch (_) {}
+      deferredInstallPrompt = null;
+      dom.installStudioBtn.hidden = true;
     });
   }
 
@@ -1277,7 +1306,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=20260714-5').catch(err => {
+        navigator.serviceWorker.register('sw.js?v=20260714-6').catch(err => {
           console.error('[CustomStudio] SW registration failed:', err);
         });
       });

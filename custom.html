@@ -17,6 +17,7 @@
         <input id="simpleModeToggle" type="checkbox" checked />
         <span>Simple mode</span>
       </label>
+      <button id="installStudioBtn" class="ghost" type="button" hidden>Install app</button>
       <button id="tipsBtn" class="ghost">Tips</button>
       <a href="index.html" class="back-link">Back to quick mode</a>
     </div>
@@ -237,6 +238,12 @@
     </section>
   </main>
 
+  <div class="studio-mobile-dock" aria-label="Studio quick actions">
+    <button id="dockControlsBtn" class="ghost" type="button">Controls</button>
+    <button id="dockPreviewBtn" class="ghost" type="button">Preview</button>
+    <button id="dockExportBtn" class="primary" type="button">Export</button>
+  </div>
+
   <dialog id="tipsDialog" class="tips-dialog">
     <form method="dialog" class="tips-card">
       <h2>Welcome to Custom Studio</h2>
@@ -251,6 +258,6 @@
     </form>
   </dialog>
 
-  <script src="js/custom.js?v=20260714-4"></script>
+  <script src="js/custom.js?v=20260714-5"></script>
 </body>
 </html>

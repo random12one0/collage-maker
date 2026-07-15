@@ -141,12 +141,19 @@ const dom = {
   // Help
   openHelpBtn:      $('openHelpBtn'),
   helpDialog:       $('helpDialog'),
+
+  // App shell quick actions
+  installAppBtn:    $('installAppBtn'),
+  quickUploadBtn:   $('quickUploadBtn'),
+  quickSwapBtn:     $('quickSwapBtn'),
+  quickDownloadBtn: $('quickDownloadBtn'),
 };
 
 /* ── Renderer & Template manager ──────────────────────────── */
 
 const renderer = new CollagRenderer(dom.canvas);
 const templateManager = new TemplateManager();
+let deferredInstallPrompt = null;
 const STORAGE_KEYS = {
   activeTab: 'collageMaker_activeTab',
   exportFormat: 'collageMaker_exportFormat',
@@ -520,6 +527,12 @@ dom.swapBtn.addEventListener('click', () => {
 
   renderer.setImages(state.image1, state.image2);
   scheduleRender();
+});
+
+if (dom.quickUploadBtn) dom.quickUploadBtn.addEventListener('click', () => dom.fileInput.click());
+if (dom.quickSwapBtn) dom.quickSwapBtn.addEventListener('click', () => dom.swapBtn.click());
+if (dom.quickDownloadBtn) dom.quickDownloadBtn.addEventListener('click', () => {
+  if (!dom.downloadBtn.disabled) dom.downloadBtn.click();
 });
 
 // ── Canvas preset & custom size ───────────────────────────────
@@ -981,7 +994,7 @@ function init() {
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=20260714-5').catch(err => {
+      navigator.serviceWorker.register('sw.js?v=20260714-6').catch(err => {
         console.error('[CollageMaker] SW registration failed:', err);
       });
     });
@@ -989,6 +1002,22 @@ function init() {
 }
 
 init();
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  if (dom.installAppBtn) dom.installAppBtn.hidden = false;
+});
+
+if (dom.installAppBtn) {
+  dom.installAppBtn.addEventListener('click', async () => {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    try { await deferredInstallPrompt.userChoice; } catch (_) {}
+    deferredInstallPrompt = null;
+    dom.installAppBtn.hidden = true;
+  });
+}
 
 /* ── Tab switching ─────────────────────────────────────────────── */
 

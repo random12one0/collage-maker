@@ -93,6 +93,10 @@ body {
   border-radius: var(--r-sm);
 }
 .header-link:hover { border-color: var(--c-accent); color: var(--c-accent-h); }
+.header-link--btn {
+  font: inherit;
+  cursor: pointer;
+}
 .header-help-btn {
   width: 28px;
   height: 28px;
@@ -812,6 +816,38 @@ kbd {
   border-radius: 6px;
 }
 
+.app-quick-dock {
+  position: fixed;
+  left: 50%;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 350;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--c-border);
+  border-radius: 14px;
+  background: rgba(20, 22, 32, 0.92);
+  backdrop-filter: blur(10px);
+}
+.app-quick-dock__btn {
+  border: 1px solid var(--c-border);
+  background: var(--c-surface-2);
+  color: var(--c-text);
+  border-radius: 10px;
+  min-height: 36px;
+  padding: 7px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.app-quick-dock__btn--primary {
+  border-color: var(--c-accent);
+  background: var(--c-accent);
+  color: #fff;
+}
+
 /* -- Spinner --------------------------------------------------- */
 .spinner {
   display: inline-block;
@@ -889,6 +925,7 @@ kbd {
   .app-main {
     padding: 10px;
     gap: 10px;
+    padding-bottom: 76px;
   }
   .tab-panel {
     padding: 12px;
@@ -896,6 +933,9 @@ kbd {
   }
   .export-dock {
     padding: 10px;
+  }
+  .app-quick-dock {
+    display: inline-flex;
   }
 }
 
