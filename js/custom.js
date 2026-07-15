@@ -11,6 +11,7 @@
     projects: 'collageStudio_projects',
     autosave: 'collageStudio_autosave',
     seenTips: 'collageStudio_seen_tips',
+    simpleMode: 'collageStudio_simple_mode',
   };
 
   const dom = {
@@ -26,6 +27,7 @@
     shareUrl: $('shareUrl'),
     tipsBtn: $('tipsBtn'),
     tipsDialog: $('tipsDialog'),
+    simpleModeToggle: $('simpleModeToggle'),
 
     outputPreset: $('outputPreset'),
     preset: $('preset'),
@@ -141,6 +143,12 @@
   }
   function setStatus(msg) {
     dom.status.textContent = msg;
+  }
+
+  function applySimpleMode(enabled) {
+    document.body.classList.toggle('simple-mode', !!enabled);
+    if (dom.simpleModeToggle) dom.simpleModeToggle.checked = !!enabled;
+    try { localStorage.setItem(STORAGE.simpleMode, enabled ? '1' : '0'); } catch (_) {}
   }
 
   function makeDefaultImageEntry(src, name, img) {
@@ -979,6 +987,11 @@
   }
 
   function bindEvents() {
+    dom.simpleModeToggle.addEventListener('change', () => {
+      applySimpleMode(dom.simpleModeToggle.checked);
+      setStatus(dom.simpleModeToggle.checked ? 'Simple mode enabled.' : 'Advanced mode enabled.');
+    });
+
     dom.newProjectBtn.addEventListener('click', () => newProject());
     dom.saveProjectBtn.addEventListener('click', () => saveProject());
     dom.loadProjectBtn.addEventListener('click', () => {
@@ -1226,6 +1239,13 @@
   }
 
   async function boot() {
+    try {
+      const simple = localStorage.getItem(STORAGE.simpleMode);
+      applySimpleMode(simple !== '0');
+    } catch (_) {
+      applySimpleMode(true);
+    }
+
     refreshProjectSelect();
     normalizeImageCount();
     state.texts = [{ id: uid('txt'), text: 'Your title', size: 52, color: '#ffffff', x: 50, y: 12, align: 'center' }];
@@ -1257,7 +1277,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js?v=20260714-4').catch(err => {
+        navigator.serviceWorker.register('sw.js?v=20260714-5').catch(err => {
           console.error('[CustomStudio] SW registration failed:', err);
         });
       });

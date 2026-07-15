@@ -54,6 +54,21 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after 
 }
 .studio-brand { font-weight: 700; letter-spacing: .01em; }
 .studio-head-actions { display: flex; align-items: center; gap: 8px; }
+.simple-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 6px 10px;
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: .8rem;
+}
+.simple-toggle input {
+  width: 14px;
+  height: 14px;
+}
 
 .back-link, .ghost, .primary, .danger {
   border: 1px solid var(--line);
@@ -101,6 +116,9 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after 
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: .06em;
+}
+.panel--layout {
+  border-color: #3f4d75;
 }
 .panel h3 {
   margin: 6px 0 8px;
@@ -252,6 +270,15 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after 
 }
 .tips-card li {
   margin-bottom: 6px;
+}
+
+body.simple-mode .panel[data-advanced="true"] {
+  display: none;
+}
+body.simple-mode .panel--layout h2::after {
+  content: " (Simple)";
+  color: var(--muted);
+  font-size: .78rem;
 }
 
 @media (max-width: 1080px) {

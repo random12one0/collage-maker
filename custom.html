@@ -9,10 +9,14 @@
   <link rel="manifest" href="manifest.webmanifest?v=20260714-1" />
   <link rel="stylesheet" href="css/custom.css?v=20260714-4" />
 </head>
-<body>
+<body class="simple-mode">
   <header class="studio-header">
     <div class="studio-brand">🧩 Custom Collage Studio</div>
     <div class="studio-head-actions">
+      <label class="simple-toggle">
+        <input id="simpleModeToggle" type="checkbox" checked />
+        <span>Simple mode</span>
+      </label>
       <button id="tipsBtn" class="ghost">Tips</button>
       <a href="index.html" class="back-link">Back to quick mode</a>
     </div>
@@ -20,7 +24,7 @@
 
   <main class="studio-shell">
     <aside class="studio-controls" aria-label="Studio controls">
-      <section class="panel">
+      <section class="panel panel--project" data-advanced="true">
         <h2>Project</h2>
         <div class="row">
           <label class="field">
@@ -46,7 +50,7 @@
         <input id="shareUrl" class="mono" readonly />
       </section>
 
-      <section class="panel">
+      <section class="panel panel--layout">
         <h2>Layout</h2>
         <div class="row">
           <label class="field">
@@ -115,7 +119,7 @@
         </div>
       </section>
 
-      <section class="panel">
+      <section class="panel panel--background" data-advanced="true">
         <h2>Background & filters</h2>
         <div class="row">
           <label class="field">
@@ -139,7 +143,7 @@
         </div>
       </section>
 
-      <section class="panel">
+      <section class="panel panel--images">
         <h2>Images</h2>
         <label class="field">
           <span>Upload photos</span>
@@ -178,7 +182,7 @@
         </div>
       </section>
 
-      <section class="panel">
+      <section class="panel panel--text" data-advanced="true">
         <h2>Text overlays</h2>
         <div id="textList" class="text-list"></div>
         <div class="row row-btn">
@@ -198,7 +202,7 @@
         </div>
       </section>
 
-      <section class="panel">
+      <section class="panel panel--export">
         <h2>Import, export & accessibility</h2>
         <div class="row row-btn">
           <button id="exportTemplateBtn" class="ghost">Export template JSON</button>
@@ -247,6 +251,6 @@
     </form>
   </dialog>
 
-  <script src="js/custom.js?v=20260714-3"></script>
+  <script src="js/custom.js?v=20260714-4"></script>
 </body>
 </html>

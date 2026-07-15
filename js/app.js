@@ -432,6 +432,7 @@ dom.dropZone.addEventListener('dragover', e => { e.preventDefault(); dom.dropZon
 dom.dropZone.addEventListener('dragleave', () => dom.dropZone.classList.remove('drag-over'));
 dom.dropZone.addEventListener('drop', e => {
   e.preventDefault();
+  if (e.target.closest('.img-slot__body')) return; // slot-specific drop handler owns this
   dom.dropZone.classList.remove('drag-over');
   handleFileDrop(e.dataTransfer.files, null);
 });
@@ -474,10 +475,18 @@ dom.preview2.addEventListener('keydown', e => {
   { el: dom.preview1, slot: 1 },
   { el: dom.preview2, slot: 2 },
 ].forEach(({ el, slot }) => {
-  el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('drag-over'); });
-  el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+  el.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    el.classList.add('drag-over');
+  });
+  el.addEventListener('dragleave', e => {
+    e.stopPropagation();
+    el.classList.remove('drag-over');
+  });
   el.addEventListener('drop', e => {
     e.preventDefault();
+    e.stopPropagation();
     el.classList.remove('drag-over');
     handleFileDrop(e.dataTransfer.files, slot);
   });
@@ -972,7 +981,7 @@ function init() {
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=20260714-4').catch(err => {
+      navigator.serviceWorker.register('sw.js?v=20260714-5').catch(err => {
         console.error('[CollageMaker] SW registration failed:', err);
       });
     });
