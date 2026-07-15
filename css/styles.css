@@ -114,8 +114,8 @@ body {
 
 /* -- App Main --------------------------------------------------- */
 .app-main {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   gap: var(--sp-md);
   padding: var(--sp-md);
   flex: 1;
@@ -131,7 +131,7 @@ body {
   border: 1.5px solid var(--c-border);
   border-radius: var(--r-xl);
   padding: var(--sp-sm);
-  min-height: 140px;
+  min-height: clamp(100px, 20vh, 170px);
   flex-shrink: 0;
   position: relative;
   transition: border-color var(--transition);
@@ -271,8 +271,8 @@ body {
 
 /* -- Canvas Wrap ----------------------------------------------- */
 .canvas-wrap {
-  flex: 1;
-  min-height: 260px;
+  min-height: clamp(220px, 42vh, 720px);
+  height: 100%;
   background: var(--c-surface);
   border-radius: var(--r-xl);
   border: 1.5px solid var(--c-border);
@@ -833,12 +833,12 @@ kbd {
   .app-main {
     flex: 1;
     min-width: 0;
-    overflow-y: auto;
+    overflow: hidden;
     padding: var(--sp-lg);
+    grid-template-rows: minmax(100px, 23vh) minmax(0, 1fr);
   }
   .canvas-wrap {
-    flex: 1;
-    min-height: 320px;
+    min-height: 0;
   }
   .app-sidebar {
     width: var(--sidebar-w);
@@ -866,6 +866,17 @@ kbd {
 }
 
 @media (max-width: 560px) {
+  .app-header {
+    height: auto;
+    min-height: var(--header-h);
+    padding-top: 8px;
+    padding-bottom: 8px;
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+  .header-actions {
+    margin-left: auto;
+  }
   .header-link {
     font-size: 0.66rem;
     padding: 3px 6px;
