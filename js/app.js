@@ -972,7 +972,7 @@ function init() {
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=20260714-3').catch(err => {
+      navigator.serviceWorker.register('sw.js?v=20260714-4').catch(err => {
         console.error('[CollageMaker] SW registration failed:', err);
       });
     });
