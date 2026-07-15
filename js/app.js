@@ -153,6 +153,12 @@ const STORAGE_KEYS = {
   exportQuality: 'collageMaker_exportQuality',
 };
 
+function syncHeaderHeightVar() {
+  const header = document.querySelector('.app-header');
+  if (!header) return;
+  document.documentElement.style.setProperty('--header-real-h', `${header.offsetHeight}px`);
+}
+
 /* ── Settings helpers ───────────────────────────────────────── */
 
 /** Read the current UI control values and return a settings object. */
@@ -926,6 +932,9 @@ function formatBytes(bytes) {
 /* ── Init ─────────────────────────────────────────────────────── */
 
 function init() {
+  syncHeaderHeightVar();
+  window.addEventListener('resize', syncHeaderHeightVar);
+  window.addEventListener('orientationchange', syncHeaderHeightVar);
   // Restore lightweight user preferences
   try {
     const savedFormat = localStorage.getItem(STORAGE_KEYS.exportFormat);
@@ -963,7 +972,7 @@ function init() {
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js?v=20260714-2').catch(err => {
+      navigator.serviceWorker.register('sw.js?v=20260714-3').catch(err => {
         console.error('[CollageMaker] SW registration failed:', err);
       });
     });

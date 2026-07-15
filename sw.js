@@ -1,10 +1,10 @@
-const CACHE_NAME = 'collage-maker-v20260714-2';
+const CACHE_NAME = 'collage-maker-v20260714-3';
 const ASSETS = [
   './',
   './index.html',
   './custom.html',
-  './css/styles.css?v=20260714-4',
-  './css/custom.css?v=20260714-1',
+  './css/styles.css?v=20260714-5',
+  './css/custom.css?v=20260714-2',
   './js/app.js?v=20260714-3',
   './js/collageRenderer.js?v=20260714-3',
   './js/templateManager.js?v=20260714-3',
